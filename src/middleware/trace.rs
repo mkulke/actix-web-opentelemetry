@@ -1,7 +1,7 @@
 use super::route_formatter::RouteFormatter;
 use crate::util::{http_flavor, http_method_str, http_scheme};
 use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
-use actix_web::{http::header, Error};
+use actix_web::{http::header, http::Uri, Error};
 use futures::{
     future::{ok, FutureExt, Ready},
     Future,
@@ -186,11 +186,18 @@ where
         attributes.push(HTTP_HOST.string(conn_info.host().to_string()));
         attributes.push(HTTP_ROUTE.string(http_route));
         attributes.push(HTTP_SCHEME.string(http_scheme(conn_info.scheme())));
-        attributes.push(HTTP_URL.string(req.uri().to_string()));
 
         let server_name = req.app_config().host();
         if server_name != conn_info.host() {
             attributes.push(HTTP_SERVER_NAME.string(server_name.to_string()));
+        }
+        if let Ok(url) = Uri::builder()
+            .scheme(conn_info.scheme())
+            .authority(server_name)
+            .path_and_query(req.uri().to_string())
+            .build()
+        {
+            attributes.push(HTTP_URL.string(url.to_string()));
         }
         if let Some(port) = conn_info
             .host()
