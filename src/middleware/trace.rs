@@ -14,7 +14,7 @@ use opentelemetry::{
 };
 use opentelemetry_semantic_conventions::trace::{
     HTTP_CLIENT_IP, HTTP_FLAVOR, HTTP_HOST, HTTP_METHOD, HTTP_ROUTE, HTTP_SCHEME, HTTP_SERVER_NAME,
-    HTTP_STATUS_CODE, HTTP_TARGET, HTTP_USER_AGENT, NET_HOST_PORT, NET_PEER_IP,
+    HTTP_STATUS_CODE, HTTP_TARGET, HTTP_URL, HTTP_USER_AGENT, NET_HOST_PORT, NET_PEER_IP,
 };
 use std::borrow::Cow;
 use std::pin::Pin;
@@ -186,6 +186,7 @@ where
         attributes.push(HTTP_HOST.string(conn_info.host().to_string()));
         attributes.push(HTTP_ROUTE.string(http_route));
         attributes.push(HTTP_SCHEME.string(http_scheme(conn_info.scheme())));
+        attributes.push(HTTP_URL.string(req.uri().to_string()));
 
         let server_name = req.app_config().host();
         if server_name != conn_info.host() {
